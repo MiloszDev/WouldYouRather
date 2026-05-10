@@ -1,18 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#673AB7</color>
-    <color name="primary_variant">#512DA8</color>
-    <color name="secondary">#00BCD4</color>
-    <color name="background">#F5F5F5</color>
-    <color name="surface">#FFFFFF</color>
+    <!-- Vibrant Material 3 Palette -->
+    <color name="primary">#6750A4</color>
     <color name="on_primary">#FFFFFF</color>
-    <color name="on_secondary">#FFFFFF</color>
-    <color name="on_background">#212121</color>
-    <color name="on_surface">#212121</color>
+    <color name="primary_container">#EADDFF</color>
+    <color name="on_primary_container">#21005D</color>
     
-    <!-- Option Colors -->
-    <color name="option_a">#FF5252</color>
-    <color name="option_b">#448AFF</color>
+    <color name="secondary">#625B71</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="secondary_container">#E8DEF8</color>
+    <color name="on_secondary_container">#1D192B</color>
+    
+    <color name="background">#FFFBFE</color>
+    <color name="surface">#FFFBFE</color>
+    <color name="on_background">#1C1B1F</color>
+    <color name="on_surface">#1C1B1F</color>
+    <color name="surface_variant">#E7E0EC</color>
+    <color name="on_surface_variant">#49454F</color>
+
+    <!-- Vibrant Option Colors -->
+    <!-- These are used by both Compose and XML layouts to prevent build errors -->
+    <color name="option_a">#FF5252</color> <!-- Vibrant Red -->
+    <color name="option_b">#2196F3</color> <!-- Vibrant Blue -->
+    <color name="option_a_container">#FFDAD4</color>
+    <color name="option_b_container">#D1E4FF</color>
+    
+    <!-- Legacy/Compatibility Colors -->
+    <color name="primary_variant">#3700B3</color>
+    <color name="secondary_variant">#018786</color>
     
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>

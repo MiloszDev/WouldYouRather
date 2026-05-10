@@ -1,59 +1,111 @@
 package com.example.wouldyourather
 
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import com.example.wouldyourather.databinding.ActivityAddQuestionBinding
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 
-class AddQuestionActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityAddQuestionBinding
-    private val db = FirebaseFirestore.getInstance()
+class AddQuestionActivity : ComponentActivity() {
+    private val viewModel: AddQuestionViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAddQuestionBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        binding.buttonSave.setOnClickListener {
-            val optionA = binding.editTextOptionA.text.toString().trim()
-            val optionB = binding.editTextOptionB.text.toString().trim()
-
-            if (optionA.isNotEmpty() && optionB.isNotEmpty()) {
-                saveQuestion(optionA, optionB)
-            } else {
-                Toast.makeText(this, "Proszę wypełnić obie opcje", Toast.LENGTH_SHORT).show()
+        setContent {
+            MaterialTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AddQuestionScreen(
+                        viewModel = viewModel,
+                        onBack = { finish() },
+                        onShowToast = { message ->
+                            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
             }
         }
     }
+}
 
-    private fun saveQuestion(optionA: String, optionB: String) {
-        showLoading(true)
-        val newQuestion = hashMapOf(
-            "optionA" to optionA,
-            "optionB" to optionB,
-            "votesA" to 0,
-            "votesB" to 0
-        )
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddQuestionScreen(
+    viewModel: AddQuestionViewModel,
+    onBack: () -> Unit,
+    onShowToast: (String) -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Add New Question") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            OutlinedTextField(
+                value = viewModel.optionA,
+                onValueChange = { viewModel.optionA = it },
+                label = { Text("Option A") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !viewModel.isLoading
+            )
 
-        db.collection("questions").add(newQuestion)
-            .addOnSuccessListener {
-                showLoading(false)
-                Toast.makeText(this, "Pytanie zostało dodane!", Toast.LENGTH_SHORT).show()
-                finish()
+            OutlinedTextField(
+                value = viewModel.optionB,
+                onValueChange = { viewModel.optionB = it },
+                label = { Text("Option B") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !viewModel.isLoading
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (viewModel.isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Button(
+                    onClick = {
+                        viewModel.saveQuestion(
+                            onSuccess = {
+                                onShowToast("Question added successfully!")
+                                onBack()
+                            },
+                            onError = { error ->
+                                onShowToast(error)
+                            }
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                ) {
+                    Text("Save Question", fontSize = 18.sp)
+                }
             }
-            .addOnFailureListener {
-                showLoading(false)
-                Toast.makeText(this, "Błąd podczas dodawania pytania", Toast.LENGTH_SHORT).show()
-            }
-    }
-
-    private fun showLoading(isLoading: Boolean) {
-        binding.progressBarAdd.visibility = if (isLoading) View.VISIBLE else View.GONE
-        binding.buttonSave.isEnabled = !isLoading
-        binding.editTextOptionA.isEnabled = !isLoading
-        binding.editTextOptionB.isEnabled = !isLoading
+        }
     }
 }
