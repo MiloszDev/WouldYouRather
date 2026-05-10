@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -58,6 +59,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
     val hasVoted = viewModel.hasVoted
     val isPartyMode = viewModel.isPartyMode
     val waitingForNextPlayer = viewModel.waitingForNextPlayer
+    val isBlocked = viewModel.isBlocked
 
     Scaffold(
         topBar = {
@@ -79,7 +81,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
             )
         },
         floatingActionButton = {
-            if (!waitingForNextPlayer) {
+            if (!waitingForNextPlayer && !isBlocked) {
                 FloatingActionButton(
                     onClick = onAddQuestionClick,
                     elevation = FloatingActionButtonDefaults.elevation(0.dp),
@@ -124,7 +126,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                     OptionCard(
                         text = question.optionA,
                         percentage = if (hasVoted) calculatePercentage(question.votesA, question.votesB) else null,
-                        onClick = { if (!hasVoted) viewModel.vote(true) },
+                        onClick = { if (!hasVoted && !isBlocked) viewModel.vote(true) },
                         containerColor = colorResource(id = R.color.option_a),
                         contentColor = Color.White
                     )
@@ -147,7 +149,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                     OptionCard(
                         text = question.optionB,
                         percentage = if (hasVoted) calculatePercentage(question.votesB, question.votesA) else null,
-                        onClick = { if (!hasVoted) viewModel.vote(false) },
+                        onClick = { if (!hasVoted && !isBlocked) viewModel.vote(false) },
                         containerColor = colorResource(id = R.color.option_b),
                         contentColor = Color.White
                     )
@@ -163,7 +165,8 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(60.dp),
-                            shape = MaterialTheme.shapes.medium
+                            shape = MaterialTheme.shapes.medium,
+                            enabled = !isBlocked
                         ) {
                             Text("Next Question", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         }
@@ -214,6 +217,45 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                         ) {
                             Text("I'm Ready!", fontSize = 18.sp)
                         }
+                    }
+                }
+            }
+
+            // Anti-Spam Block Overlay
+            AnimatedVisibility(
+                visible = isBlocked,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.8f))
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = null,
+                            modifier = Modifier.size(100.dp),
+                            tint = Color.Red
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            "Slow Down!",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                        Text(
+                            "Too many requests. Please wait a few seconds before continuing.",
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        )
+                        CircularProgressIndicator(color = Color.White)
                     }
                 }
             }

@@ -6,9 +6,12 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -35,6 +38,12 @@ class MainViewModel : ViewModel() {
     var waitingForNextPlayer by mutableStateOf(false)
         private set
 
+    // Anti-Spam States
+    var isBlocked by mutableStateOf(false)
+        private set
+    private var lastLoadTime = 0L
+    private var quickLoadCount = 0
+
     init {
         loadRandomQuestion()
     }
@@ -58,6 +67,29 @@ class MainViewModel : ViewModel() {
     }
 
     fun loadRandomQuestion() {
+        if (isBlocked) return
+
+        // Anti-spam logic for single player
+        if (!isPartyMode) {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastLoadTime < 1000) { // If clicks are less than 1 second apart
+                quickLoadCount++
+            } else {
+                quickLoadCount = 0
+            }
+            lastLoadTime = currentTime
+
+            if (quickLoadCount >= 5) { // Block after 5 rapid clicks
+                isBlocked = true
+                viewModelScope.launch {
+                    delay(10000) // Block for 10 seconds
+                    isBlocked = false
+                    quickLoadCount = 0
+                }
+                return
+            }
+        }
+
         isLoading = true
         hasVoted = false
         partyResultsRevealed = false
@@ -82,6 +114,8 @@ class MainViewModel : ViewModel() {
     }
 
     fun vote(isOptionA: Boolean) {
+        if (isBlocked) return
+        
         if (isPartyMode) {
             partyVotes.add(isOptionA)
             if (partyVotes.size < playerCount) {
