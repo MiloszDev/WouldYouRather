@@ -24,13 +24,13 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
+import androidx.compose.ui.draw.clip
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
@@ -103,7 +103,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
+                verticalArrangement = Arrangement.Center
             ) {
                 if (isLoading) {
                     Box(modifier = Modifier.fillMaxWidth().height(300.dp), contentAlignment = Alignment.Center) {
@@ -117,7 +117,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.padding(vertical = 8.dp)
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
 
@@ -125,7 +125,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                         text = "Would you rather...",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(vertical = 16.dp),
+                        modifier = Modifier.padding(bottom = 24.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
 
@@ -138,7 +138,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                         contentColor = Color.White
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     
                     Card(
                         shape = CircleShape,
@@ -153,7 +153,7 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                         )
                     }
                     
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     OptionCard(
                         text = question.optionB,
@@ -169,30 +169,29 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                             PartyResultsSummary(viewModel)
                         }
                         
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(
-                            onClick = { viewModel.loadRandomQuestion() },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                            shape = MaterialTheme.shapes.medium,
-                            enabled = !isBlocked
-                        ) {
-                            Text("Next Question", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        }
+                        // Show a loading indicator for the auto-advance
+                        Spacer(modifier = Modifier.height(32.dp))
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth().clip(CircleShape),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        Text(
+                            "Next question in a moment...",
+                            modifier = Modifier.padding(top = 8.dp),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     
                     if (isPartyMode && !hasVoted && viewModel.currentPlayerIndex == 0 && viewModel.partyVotes.isEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         PlayerSelector(viewModel)
                     }
-                    
-                    // Extra spacer for bottom scrolling
-                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
 
-            // Overlays (Party Mode Pass, Anti-Spam)
+            // Overlays
             AnimatedVisibility(
                 visible = waitingForNextPlayer,
                 enter = fadeIn(),
@@ -243,7 +242,7 @@ fun OptionCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp), // Fixed height to prevent "too large" issue
+            .height(180.dp),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
             contentColor = contentColor
@@ -258,7 +257,6 @@ fun OptionCard(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                // Add a dark gradient overlay so text is ALWAYS readable
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -282,7 +280,7 @@ fun OptionCard(
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     lineHeight = 26.sp,
-                    color = Color.White // Force white for better contrast with images/overlay
+                    color = Color.White
                 )
                 if (percentage != null) {
                     Text(

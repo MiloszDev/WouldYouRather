@@ -117,9 +117,11 @@ class MainViewModel : ViewModel() {
     }
 
     fun vote(isOptionA: Boolean) {
-        if (isBlocked) return
+        if (isBlocked || (hasVoted && !isPartyMode)) return
         
         if (isPartyMode) {
+            if (waitingForNextPlayer) return
+            
             partyVotes.add(isOptionA)
             if (partyVotes.size < playerCount) {
                 waitingForNextPlayer = true
@@ -131,10 +133,22 @@ class MainViewModel : ViewModel() {
                 val votesForA = partyVotes.count { it }
                 submitGlobalVote(votesForA > playerCount / 2)
                 updateGlobalStatsAfterParty()
+                
+                // In party mode, we auto-advance after 3 seconds so people can see the summary
+                viewModelScope.launch {
+                    delay(3500)
+                    loadRandomQuestion()
+                }
             }
         } else {
             hasVoted = true
             submitGlobalVote(isOptionA)
+            
+            // Auto-advance after 1.5 seconds in single player
+            viewModelScope.launch {
+                delay(1500)
+                loadRandomQuestion()
+            }
         }
     }
 
