@@ -23,9 +23,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -101,29 +101,31 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(20.dp),
+                    .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Top
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator()
+                    Box(modifier = Modifier.fillMaxWidth().height(300.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 } else if (question != null) {
                     
                     if (isPartyMode && !hasVoted) {
                         Text(
                             text = "Player ${viewModel.currentPlayerIndex + 1} of ${viewModel.playerCount}",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
 
                     Text(
                         text = "Would you rather...",
-                        fontSize = 26.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(bottom = 24.dp),
+                        modifier = Modifier.padding(vertical = 16.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
 
@@ -136,7 +138,8 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                         contentColor = Color.White
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
                     Card(
                         shape = CircleShape,
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -144,12 +147,13 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                     ) {
                         Text(
                             "OR",
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                            fontSize = 20.sp,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     OptionCard(
                         text = question.optionB,
@@ -165,161 +169,62 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                             PartyResultsSummary(viewModel)
                         }
                         
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
                         Button(
                             onClick = { viewModel.loadRandomQuestion() },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(60.dp),
+                                .height(56.dp),
                             shape = MaterialTheme.shapes.medium,
                             enabled = !isBlocked
                         ) {
-                            Text("Next Question", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text("Next Question", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                     
                     if (isPartyMode && !hasVoted && viewModel.currentPlayerIndex == 0 && viewModel.partyVotes.isEmpty()) {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         PlayerSelector(viewModel)
                     }
+                    
+                    // Extra spacer for bottom scrolling
+                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
 
-            // Party Mode Pass Overlay
+            // Overlays (Party Mode Pass, Anti-Spam)
             AnimatedVisibility(
                 visible = waitingForNextPlayer,
-                enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = null,
-                            modifier = Modifier.size(80.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            "Vote Recorded!",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            "Pass the phone to Player ${viewModel.currentPlayerIndex + 2}",
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        )
-                        Button(
-                            onClick = { viewModel.nextPlayerReady() },
-                            modifier = Modifier.fillMaxWidth().height(56.dp)
-                        ) {
-                            Text("I'm Ready!", fontSize = 18.sp)
-                        }
-                    }
-                }
-            }
-
-            // Anti-Spam Block Overlay
-            AnimatedVisibility(
-                visible = isBlocked,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.8f))
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.98f))
                         .padding(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Warning,
-                            contentDescription = null,
-                            modifier = Modifier.size(100.dp),
-                            tint = Color.Red
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            "Slow Down!",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color.White
-                        )
-                        Text(
-                            "Too many requests. Please wait a few seconds before continuing.",
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Center,
-                            color = Color.White.copy(alpha = 0.8f),
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        )
-                        CircularProgressIndicator(color = Color.White)
+                        Icon(Icons.Default.Info, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.primary)
+                        Text("Vote Recorded!", fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 16.dp))
+                        Text("Pass the phone to Player ${viewModel.currentPlayerIndex + 2}", fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 16.dp))
+                        Button(onClick = { viewModel.nextPlayerReady() }, modifier = Modifier.fillMaxWidth().height(50.dp)) {
+                            Text("I'm Ready!")
+                        }
                     }
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun PartyResultsSummary(viewModel: MainViewModel) {
-    val votesA = viewModel.partyVotes.count { it }
-    val votesB = viewModel.partyVotes.size - votesA
-    
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Group Breakdown", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Option A", fontSize = 14.sp)
-                    Text("$votesA", fontSize = 28.sp, fontWeight = FontWeight.Black)
+            AnimatedVisibility(visible = isBlocked, enter = fadeIn(), exit = fadeOut()) {
+                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.85f)).padding(24.dp), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.Warning, null, modifier = Modifier.size(80.dp), tint = Color.Red)
+                        Text("Slow Down!", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White, modifier = Modifier.padding(top = 16.dp))
+                        Text("Too many requests. Wait a bit.", color = Color.White.copy(alpha = 0.8f), textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 12.dp))
+                        CircularProgressIndicator(color = Color.White)
+                    }
                 }
-                
-                Box(modifier = Modifier.height(40.dp).width(1.dp).background(MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.2f)))
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Option B", fontSize = 14.sp)
-                    Text("$votesB", fontSize = 28.sp, fontWeight = FontWeight.Black)
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PlayerSelector(viewModel: MainViewModel) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("Number of Players:", fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 8.dp))
-        Row {
-            for (i in 2..4) {
-                FilterChip(
-                    selected = viewModel.playerCount == i,
-                    onClick = { viewModel.playerCount = i },
-                    label = { Text("$i Players") },
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
             }
         }
     }
@@ -338,47 +243,95 @@ fun OptionCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 160.dp),
+            .height(180.dp), // Fixed height to prevent "too large" issue
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             if (!imageUrl.isNullOrBlank()) {
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    alpha = 0.4f
+                    contentScale = ContentScale.Crop
+                )
+                // Add a dark gradient overlay so text is ALWAYS readable
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                                startY = 0f
+                            )
+                        )
                 )
             }
             
             Column(
-                modifier = Modifier.padding(24.dp),
+                modifier = Modifier.fillMaxSize().padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = text,
-                    fontSize = 22.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    lineHeight = 30.sp
+                    lineHeight = 26.sp,
+                    color = Color.White // Force white for better contrast with images/overlay
                 )
                 if (percentage != null) {
                     Text(
                         text = "$percentage%",
-                        fontSize = 32.sp,
+                        fontSize = 30.sp,
                         fontWeight = FontWeight.Black,
-                        modifier = Modifier.padding(top = 12.dp)
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun PartyResultsSummary(viewModel: MainViewModel) {
+    val votesA = viewModel.partyVotes.count { it }
+    val votesB = viewModel.partyVotes.size - votesA
+    Card(modifier = Modifier.fillMaxWidth().padding(top = 16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+        Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Group Results", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Option A", fontSize = 12.sp)
+                    Text("$votesA", fontSize = 24.sp, fontWeight = FontWeight.Black)
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Option B", fontSize = 12.sp)
+                    Text("$votesB", fontSize = 24.sp, fontWeight = FontWeight.Black)
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlayerSelector(viewModel: MainViewModel) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("Players:", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+        Row {
+            for (i in 2..4) {
+                FilterChip(
+                    selected = viewModel.playerCount == i,
+                    onClick = { viewModel.playerCount = i },
+                    label = { Text("$i") },
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
             }
         }
     }
