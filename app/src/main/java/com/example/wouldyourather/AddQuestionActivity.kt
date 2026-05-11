@@ -6,6 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -62,22 +64,41 @@ fun AddQuestionScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Text("Option A", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             OutlinedTextField(
                 value = viewModel.optionA,
                 onValueChange = { viewModel.optionA = it },
-                label = { Text("Option A") },
+                label = { Text("Text for Option A") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !viewModel.isLoading
+            )
+            OutlinedTextField(
+                value = viewModel.imageA,
+                onValueChange = { viewModel.imageA = it },
+                label = { Text("Image URL for Option A (Optional)") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !viewModel.isLoading
             )
 
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            Text("Option B", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             OutlinedTextField(
                 value = viewModel.optionB,
                 onValueChange = { viewModel.optionB = it },
-                label = { Text("Option B") },
+                label = { Text("Text for Option B") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !viewModel.isLoading
+            )
+            OutlinedTextField(
+                value = viewModel.imageB,
+                onValueChange = { viewModel.imageB = it },
+                label = { Text("Image URL for Option B (Optional)") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !viewModel.isLoading
             )

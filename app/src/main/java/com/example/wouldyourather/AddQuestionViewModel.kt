@@ -11,6 +11,9 @@ class AddQuestionViewModel : ViewModel() {
 
     var optionA by mutableStateOf("")
     var optionB by mutableStateOf("")
+    var imageA by mutableStateOf("")
+    var imageB by mutableStateOf("")
+    
     var isLoading by mutableStateOf(false)
         private set
 
@@ -24,6 +27,8 @@ class AddQuestionViewModel : ViewModel() {
         val newQuestion = hashMapOf(
             "optionA" to optionA.trim(),
             "optionB" to optionB.trim(),
+            "imageA" to if (imageA.isNotBlank()) imageA.trim() else null,
+            "imageB" to if (imageB.isNotBlank()) imageB.trim() else null,
             "votesA" to 0L,
             "votesB" to 0L
         )

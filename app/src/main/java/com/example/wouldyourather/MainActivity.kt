@@ -23,10 +23,14 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import coil.compose.AsyncImage
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
@@ -119,19 +123,20 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                         text = "Would you rather...",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(bottom = 32.dp),
+                        modifier = Modifier.padding(bottom = 24.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
 
                     OptionCard(
                         text = question.optionA,
+                        imageUrl = question.imageA,
                         percentage = if (hasVoted) calculatePercentage(question.votesA, question.votesB) else null,
                         onClick = { if (!hasVoted && !isBlocked) viewModel.vote(true) },
                         containerColor = colorResource(id = R.color.option_a),
                         contentColor = Color.White
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Card(
                         shape = CircleShape,
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -144,10 +149,11 @@ fun MainScreen(viewModel: MainViewModel, onAddQuestionClick: () -> Unit) {
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     OptionCard(
                         text = question.optionB,
+                        imageUrl = question.imageB,
                         percentage = if (hasVoted) calculatePercentage(question.votesB, question.votesA) else null,
                         onClick = { if (!hasVoted && !isBlocked) viewModel.vote(false) },
                         containerColor = colorResource(id = R.color.option_b),
@@ -322,6 +328,7 @@ fun PlayerSelector(viewModel: MainViewModel) {
 @Composable
 fun OptionCard(
     text: String,
+    imageUrl: String?,
     percentage: Int?,
     onClick: () -> Unit,
     containerColor: Color,
@@ -331,7 +338,7 @@ fun OptionCard(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 140.dp),
+            .heightIn(min = 160.dp),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
             contentColor = contentColor
@@ -339,12 +346,21 @@ fun OptionCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            if (!imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    alpha = 0.4f
+                )
+            }
+            
             Column(
+                modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
