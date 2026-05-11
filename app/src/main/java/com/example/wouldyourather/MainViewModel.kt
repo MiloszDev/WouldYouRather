@@ -41,8 +41,7 @@ class MainViewModel : ViewModel() {
     // Anti-Spam States
     var isBlocked by mutableStateOf(false)
         private set
-    private var lastLoadTime = 0L
-    private var quickLoadCount = 0
+    private val clickTimestamps = mutableListOf<Long>()
 
     init {
         loadRandomQuestion()
@@ -72,21 +71,25 @@ class MainViewModel : ViewModel() {
         // Anti-spam logic for single player
         if (!isPartyMode) {
             val currentTime = System.currentTimeMillis()
-            if (currentTime - lastLoadTime < 1000) { // If clicks are less than 1 second apart
-                quickLoadCount++
-            } else {
-                quickLoadCount = 0
+            clickTimestamps.add(currentTime)
+            
+            // Only keep track of the last 5 clicks
+            if (clickTimestamps.size > 5) {
+                clickTimestamps.removeAt(0)
             }
-            lastLoadTime = currentTime
 
-            if (quickLoadCount >= 5) { // Block after 5 rapid clicks
-                isBlocked = true
-                viewModelScope.launch {
-                    delay(10000) // Block for 10 seconds
-                    isBlocked = false
-                    quickLoadCount = 0
+            // Check if 5 clicks happened in 3 seconds or less
+            if (clickTimestamps.size == 5) {
+                val timeSpan = currentTime - clickTimestamps[0]
+                if (timeSpan <= 3000) {
+                    isBlocked = true
+                    viewModelScope.launch {
+                        delay(10000) // Block for 10 seconds
+                        isBlocked = false
+                        clickTimestamps.clear()
+                    }
+                    return
                 }
-                return
             }
         }
 
